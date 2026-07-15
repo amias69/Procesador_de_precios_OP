@@ -20,10 +20,11 @@ def load_catalog_dataframe(catalog_path: Path) -> pd.DataFrame:
 
 def build_catalog_lookup(
     catalog_df: pd.DataFrame,
-) -> dict[str, str]:
+) -> dict[str, dict[str, str]]:
     required_columns = {
-        "Num_RegSan",
-        "Cod_Prod",
+        "registro_sanitario",
+        "codigo_producto",
+        "nombre_producto",
     }
 
     missing_columns = required_columns - set(catalog_df.columns)
@@ -36,16 +37,28 @@ def build_catalog_lookup(
             f"requeridas: {missing_text}."
         )
 
-    lookup: dict[str, str] = {}
+    lookup: dict[str, dict[str, str]] = {}
 
     for _, row in catalog_df.iterrows():
-        registro = normalize_excel_text(row["Num_RegSan"])
-        cod_producto = normalize_excel_text(row["Cod_Prod"])
+        registro = normalize_excel_text(
+            row["registro_sanitario"]
+        )
 
-        if not registro or not cod_producto:
+        codigo_producto = normalize_excel_text(
+            row["codigo_producto"]
+        )
+
+        nombre_producto = normalize_excel_text(
+            row["nombre_producto"]
+        )
+
+        if not registro or not codigo_producto:
             continue
 
-        lookup[registro] = cod_producto
+        lookup[registro] = {
+            "codigo_producto": codigo_producto,
+            "nombre_producto": nombre_producto,
+        }
 
     return lookup
 
@@ -68,13 +81,17 @@ def process_price_file(
 
     for _, row in farmacia_df.iterrows():
         registro = normalize_excel_text(row.get("registro_sanitario", ""))
+        nombre_farmacia = normalize_excel_text(
+            row.get("Nombre", "")
+        )
         precio_empaque = row.get("precio_empaque")
         precio_unidad = row.get("precio_unidad")
 
-        if not registro_:
+        if not registro:
             descartados.append(
                 {
                     "registro_sanitario": "",
+                    "Nombre": nombre_farmacia,
                     "precio_empaque": precio_empaque,
                     "precio_unidad": precio_unidad,
                     "motivo": "Registro sanitario vacío.",
@@ -82,18 +99,25 @@ def process_price_file(
             )
             continue
 
-        cod_prod = catalog_lookup.get(registro)
+        producto_catalogo = catalog_lookup.get(registro)
 
-        if not cod_prod:
+        if not producto_catalogo:
             descartados.append(
                 {
                     "registro_sanitario": registro,
+                    "Nombre": nombre_farmacia,
                     "precio_empaque": precio_empaque,
                     "precio_unidad": precio_unidad,
-                    "motivo": "Registro sanitario no encontrado en el catálogo oficial.",
+                    "motivo": (
+                        "Registro sanitario no encontrado "
+                        "en el catálogo oficial vigente."
+                    ),
                 }
             )
             continue
+
+cod_prod = producto_catalogo["codigo_producto"]
+nombre_producto = producto_catalogo["nombre_producto"]
 
         errores_empaque = validate_price(precio_empaque, "precio_empaque")
         errores_unidad = validate_price(precio_unidad, "precio_unidad")
@@ -103,6 +127,7 @@ def process_price_file(
             errores_precio.append(
                 {
                     "registro_sanitario": registro,
+                    "nombre_producto": nombre_producto,
                     "precio_empaque": precio_empaque,
                     "precio_unidad": precio_unidad,
                     "CodProd": cod_prod,
@@ -114,7 +139,8 @@ def process_price_file(
 
         validos.append(
             {
-                "registro_sanitario": registro_display,
+                "registro_sanitario": registro ,
+                "nombre_producto": nombre_producto,
                 "precio_empaque": precio_empaque,
                 "precio_unidad": precio_unidad,
                 "CodProd": cod_prod,
