@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual Environment
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Datos temporales
+backend/data/uploads/*
+backend/data/outputs/*
+backend/data/reports/*
+
+# Mantener la estructura de carpetas
+!backend/data/uploads/.gitkeep
+!backend/data/outputs/.gitkeep
+!backend/data/reports/.gitkeep
