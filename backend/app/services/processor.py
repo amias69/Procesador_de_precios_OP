@@ -116,11 +116,17 @@ def process_price_file(
             )
             continue
 
-cod_prod = producto_catalogo["codigo_producto"]
-nombre_producto = producto_catalogo["nombre_producto"]
+        cod_prod = producto_catalogo["codigo_producto"]
+        nombre_producto = producto_catalogo["nombre_producto"]
 
-        errores_empaque = validate_price(precio_empaque, "precio_empaque")
-        errores_unidad = validate_price(precio_unidad, "precio_unidad")
+        errores_empaque = validate_price(
+            precio_empaque,
+            "precio_empaque",
+        )
+        errores_unidad = validate_price(
+            precio_unidad,
+            "precio_unidad",
+        )
         errores = errores_empaque + errores_unidad
 
         if errores:
@@ -139,7 +145,7 @@ nombre_producto = producto_catalogo["nombre_producto"]
 
         validos.append(
             {
-                "registro_sanitario": registro ,
+                "registro_sanitario": registro,
                 "nombre_producto": nombre_producto,
                 "precio_empaque": precio_empaque,
                 "precio_unidad": precio_unidad,

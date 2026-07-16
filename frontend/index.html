@@ -90,6 +90,7 @@
               <option value="11">11 - Noviembre</option>
               <option value="12">12 - Diciembre</option>
             </select>
+           <small class="field-error"></small>
           </label>
 
           <label class="form-field">
@@ -106,7 +107,7 @@
             <small class="field-error" id="anio-error"></small>
           </label>
 
-          <label class="form-field form-field--wide">
+          <label class="form-field">
             <span>Tipo de proceso</span>
             <select id="tipo-proceso" name="tipoProceso" required>
               <option value="CARGA ARCHIVO">CARGA ARCHIVO</option>
@@ -140,11 +141,15 @@
           <span class="status-box__label">Estado actual</span>
           <strong id="catalogo-status">Catálogo pendiente de actualización</strong>
         </div>
+        <div class="catalogo-details" id="catalogo-details" hidden>
+          <strong id="catalogo-detail-title"></strong>
+          <p id="catalogo-detail-message"></p>
+        </div>
 
         <div class="actions">
           <button class="button button--primary" id="actualizar-catalogo" type="button">
             Actualizar catálogo
-          </button>
+          </button> 
 
           <button class="button button--secondary" id="ver-catalogo" type="button" disabled>
             Ver detalles
@@ -209,7 +214,12 @@
           <article class="result-card">
             <span>Válidos</span>
             <strong id="validos-count">0</strong>
-            <button class="button button--small" type="button" disabled>
+            <button
+              class="button button--small"
+              id="descargar-validos"
+              type="button"
+              disabled
+            >
               Descargar reporte
             </button>
           </article>
@@ -217,7 +227,12 @@
           <article class="result-card">
             <span>Descartados</span>
             <strong id="descartados-count">0</strong>
-            <button class="button button--small" type="button" disabled>
+            <button
+              class="button button--small"
+              id="descargar-descartados"
+              type="button"
+              disabled
+            >
               Descargar reporte
             </button>
           </article>
@@ -225,7 +240,12 @@
           <article class="result-card">
             <span>Errores de precio</span>
             <strong id="errores-count">0</strong>
-            <button class="button button--small" type="button" disabled>
+            <button
+              class="button button--small"
+              id="descargar-errores"
+              type="button"
+              disabled
+            >
               Descargar reporte
             </button>
           </article>

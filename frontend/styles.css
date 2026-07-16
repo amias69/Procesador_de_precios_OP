@@ -208,7 +208,7 @@ button:disabled {
 input,
 select {
   width: 100%;
-  min-height: 56px;
+  height: 56px;
   padding: 0 16px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -424,4 +424,42 @@ select:focus {
   color: #067647;
   background: #ECFDF3;
   border-color: rgba(6, 118, 71, 0.28);
+}
+
+.catalogo-details {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: var(--radius-md);
+  background: var(--color-soft);
+  border: 1px solid var(--color-border);
+}
+
+.catalogo-details p {
+  margin: 6px 0;
+  color: var(--color-navy);
+  font-size: 0.95rem;
+}
+
+@keyframes file-confirmation-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.55;
+    transform: scale(1.01);
+  }
+}
+
+.file-info.is-confirmed {
+  animation: file-confirmation-pulse 0.45s ease-in-out 2;
+}
+
+.upload-box.is-dragging {
+  border-color: var(--color-blue);
+  background: var(--color-white);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px var(--color-shadow);
 }
