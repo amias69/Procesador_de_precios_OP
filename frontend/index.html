@@ -117,6 +117,16 @@
           </label>
         </form>
 
+        <label class="remember-switch">
+          <input type="checkbox" id="recordar-datos"/>
+
+          <span class="remember-switch__slider"></span>
+
+          <span class="remember-switch__text">
+            Recordar datos del establecimiento
+          </span>
+        </label>
+
         <div class="filename-preview">
           <span>Nombre final estimado</span>
           <strong id="filename-preview">
@@ -151,7 +161,14 @@
             Actualizar catálogo
           </button> 
 
-          <button class="button button--secondary" id="ver-catalogo" type="button" disabled>
+          <button class="button button--outline" id="cargar-catalogo-manual" type="button">
+              Cargar catálogo manualmente
+            </button>
+
+            <input
+              type="file" id="catalogo-manual-input" accept=".xlsx,.xls" hidden/>
+
+          <button class="button button--outline" id="ver-catalogo" type="button" disabled>
             Ver detalles
           </button>
         </div>

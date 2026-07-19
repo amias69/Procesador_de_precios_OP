@@ -20,6 +20,11 @@ const catalogoDetailMessage = document.getElementById("catalogo-detail-message")
 const catalogoDetailTitle =document.getElementById("catalogo-detail-title");
 const uploadBox = document.querySelector(".upload-box");
 
+const cargarCatalogoManualButton = document.getElementById("cargar-catalogo-manual");
+const catalogoManualInput = document.getElementById("catalogo-manual-input");
+
+const recordarDatosInput = document.getElementById("recordar-datos");
+
 const actualizarCatalogoButton = document.getElementById(
   "actualizar-catalogo"
 );
@@ -194,6 +199,79 @@ function manejarCambioArchivo() {
   }, 1200);
 }
 
+async function cargarCatalogoManual() {
+  const archivo =
+    catalogoManualInput.files[0];
+
+  if (!archivo) {
+    return;
+  }
+
+  catalogoDetails.hidden = true;
+
+  cargarCatalogoManualButton.disabled =
+    true;
+
+  cargarCatalogoManualButton.textContent =
+    "Procesando...";
+
+  mostrarMensaje(
+    "Procesando el catálogo seleccionado. " +
+    "Por favor, espera unos momentos."
+  );
+
+  const formData =
+    new FormData();
+
+  formData.append(
+    "archivo",
+    archivo
+  );
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/catalogo/cargar-manual`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        obtenerMensajeError(data)
+      );
+    }
+
+    catalogoStatus.textContent =
+      "Catálogo cargado correctamente";
+
+    verCatalogoButton.disabled =
+      false;
+
+    mostrarMensajeExito(
+      "Catálogo cargado y procesado correctamente. " +
+      "Todo está listo y puedes continuar."
+    );
+
+  } catch (error) {
+    mostrarMensajeError(
+      error.message
+    );
+
+  } finally {
+    cargarCatalogoManualButton.disabled =
+      false;
+
+    cargarCatalogoManualButton.textContent =
+      "Cargar catálogo manualmente";
+
+    catalogoManualInput.value = "";
+  }
+}
 
 function mostrarMensaje(texto) {
   systemMessage.textContent = texto;
@@ -442,6 +520,18 @@ function validarFormularioAntesDeProcesar() {
       "Corrígelos antes de continuar."
     );
 
+    const primerError =
+      document.querySelector(
+        ".is-invalid"
+      );
+
+    if (primerError) {
+      primerError.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+
     return false;
   }
 
@@ -487,23 +577,25 @@ async function consultarEstadoCatalogo() {
       catalogoDetailTitle.textContent =
         "Catálogo correcto";
 
-      catalogoDetailMessage.textContent =
+      escribirTexto(
+        catalogoDetailMessage,
         "El catálogo oficial se descargó y procesó correctamente. " +
-        "Puedes continuar sin problemas.";
+        "Puedes continuar sin problemas."
+      );
 
       verCatalogoButton.disabled = false;
 
     } else {
-      catalogoStatus.textContent =
-        "Catálogo pendiente de actualización";
-
       catalogoDetailTitle.textContent =
         "Catálogo no disponible";
 
-      catalogoDetailMessage.textContent =
-        "Actualiza el catálogo oficial antes de continuar.";
+      escribirTexto(
+        catalogoDetailMessage,
+        "No se encontró un catálogo oficial preparado. " +
+        "Actualiza el catálogo para poder continuar."
+      );
 
-      verCatalogoButton.disabled = true;
+      verCatalogoButton.disabled = false;
     }
 
   } catch (error) {
@@ -521,6 +613,8 @@ async function consultarEstadoCatalogo() {
 }
 
 async function actualizarCatalogo() {
+  catalogoDetails.hidden = true;
+
   actualizarCatalogoButton.disabled =
     true;
 
@@ -573,6 +667,86 @@ async function actualizarCatalogo() {
     actualizarCatalogoButton.textContent =
       "Actualizar catálogo";
   }
+}
+
+function guardarDatosEstablecimiento() {
+  if (!recordarDatosInput.checked) {
+    localStorage.removeItem(
+      "datosEstablecimiento"
+    );
+
+    return;
+  }
+
+  const datos = {
+    ruc: rucInput.value,
+    codEstab: codEstabInput.value,
+  };
+
+  localStorage.setItem(
+    "datosEstablecimiento",
+    JSON.stringify(datos)
+  );
+}
+
+
+function cargarDatosEstablecimiento() {
+  const datosGuardados =
+    localStorage.getItem(
+      "datosEstablecimiento"
+    );
+
+  if (!datosGuardados) {
+    return;
+  }
+
+  try {
+    const datos =
+      JSON.parse(datosGuardados);
+
+    rucInput.value =
+      datos.ruc || "";
+
+    codEstabInput.value =
+      datos.codEstab || "";
+
+    recordarDatosInput.checked =
+      true;
+
+  } catch {
+    localStorage.removeItem(
+      "datosEstablecimiento"
+    );
+  }
+}
+
+//función para dar efecto de movimiento al mensaje del botón "ver detalle"
+let intervaloEscritura = null;
+
+function escribirTexto(
+  elemento,
+  texto,
+  velocidad = 12
+) {
+  if (intervaloEscritura) {
+    clearInterval(intervaloEscritura);
+  }
+
+  elemento.textContent = "";
+
+  let indice = 0;
+
+  intervaloEscritura = setInterval(() => {
+    elemento.textContent +=
+      texto.charAt(indice);
+
+    indice++;
+
+    if (indice >= texto.length) {
+      clearInterval(intervaloEscritura);
+      intervaloEscritura = null;
+    }
+  }, velocidad);
 }
 
 
@@ -759,6 +933,21 @@ function registrarEventos() {
     }
   );
 
+  recordarDatosInput.addEventListener(
+    "change",
+    guardarDatosEstablecimiento
+  );
+
+  rucInput.addEventListener(
+    "change",
+    guardarDatosEstablecimiento
+  );
+
+  codEstabInput.addEventListener(
+    "change",
+    guardarDatosEstablecimiento
+  );
+
   codEstabInput.addEventListener(
     "input",
     () => {
@@ -777,6 +966,18 @@ function registrarEventos() {
 
       actualizarVistaPreviaNombre();
     }
+  );
+
+  cargarCatalogoManualButton.addEventListener(
+    "click",
+    () => {
+      catalogoManualInput.click();
+    } 
+  );
+
+  catalogoManualInput.addEventListener(
+    "change",
+    cargarCatalogoManual
   );
 
   mesSelect.addEventListener(
@@ -933,6 +1134,8 @@ function registrarEventos() {
 
 async function iniciarApp() {
   completarFechaActual();
+
+  cargarDatosEstablecimiento();
 
   actualizarVistaPreviaNombre();
 

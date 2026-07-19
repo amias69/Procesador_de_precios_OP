@@ -1,125 +1,72 @@
 from pathlib import Path
 
-from playwright.sync_api import (
-    TimeoutError as PlaywrightTimeoutError,
-    sync_playwright,
+import requests
+
+URL_CATALOGO = (
+    "https://ms-opm.minsa.gob.pe/"
+    "msopmcovid/producto/catalogoproductos"
 )
 
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (X11; Linux x86_64; rv:152.0) "
+        "Gecko/20100101 Firefox/152.0"
+    ),
+    "Content-Type": "application/json",
+    "Origin": "https://opm-digemid.minsa.gob.pe",
+    "Referer": "https://opm-digemid.minsa.gob.pe/",
+}
 
-URL = "https://opm-digemid.minsa.gob.pe/"
-
-TEXTOS_CATALOGO = [
-    "Catálogo de Productos Farmacéuticos actualizado diariamente",
-    "Pharmaceutical Products Catalog updated daily",
-]
-
-
-def cerrar_popups(page, intentos: int = 5) -> None:
-    """
-    Cierra ventanas emergentes informativas si aparecen.
-    """
-    for _ in range(intentos):
-        try:
-            page.get_by_role(
-                "button",
-                name="Cerrar",
-            ).click(timeout=2000)
-
-        except PlaywrightTimeoutError:
-            break
-
-
-def obtener_enlace_catalogo(page):
-    """
-    Busca el enlace de descarga del catálogo oficial.
-    """
-    for texto in TEXTOS_CATALOGO:
-        enlace = page.get_by_text(
-            texto,
-            exact=True,
-        )
-
-        try:
-            enlace.wait_for(
-                state="visible",
-                timeout=5000,
-            )
-            return enlace
-
-        except PlaywrightTimeoutError:
-            pass
-
-    raise RuntimeError(
-        "No se encontró el enlace de descarga del catálogo oficial."
-    )
-
+PAYLOAD = {
+    "filtro": {
+        "situacion": "ACT",
+        "tokenGoogle": "",
+    }
+}
 
 def descargar_catalogo(
     archivo_salida: str | Path,
-    headless: bool = True,
 ) -> Path:
     """
-    Descarga el catálogo actualizado de productos farmacéuticos
-    desde el Observatorio de DIGEMID.
-
-    Parámetros:
-        archivo_salida:
-            Ruta donde se guardará el archivo Excel.
-
-        headless:
-            True ejecuta Firefox oculto.
-            False muestra el navegador para depuración.
-
-    Retorna:
-        Path con la ruta del archivo descargado.
+    Descarga el catálogo oficial de productos farmacéuticos de DIGEMID.
     """
-    archivo_salida = Path(archivo_salida)
 
-    archivo_salida.parent.mkdir(
+    ruta_salida = Path(archivo_salida)
+
+    print("Descargando catálogo de productos farmacéuticos...")
+
+    try:
+        respuesta = requests.post(
+            URL_CATALOGO,
+            headers=HEADERS,
+            json=PAYLOAD,
+            timeout=120,
+        )
+
+        respuesta.raise_for_status()
+
+    except requests.RequestException as error:
+        raise RuntimeError(
+            f"No se pudo descargar el catálogo de DIGEMID: {error}"
+        ) from error
+
+    # Los archivos XLSX son contenedores ZIP y comienzan con la firma "PK".
+    # Esto evita guardar como Excel una página HTML de bloqueo de Cloudflare.
+    if not respuesta.content.startswith(b"PK"):
+        raise RuntimeError(
+            "DIGEMID respondió correctamente a la petición, "
+            "pero la respuesta recibida no parece ser un archivo Excel válido."
+        )
+
+    ruta_salida.parent.mkdir(
         parents=True,
         exist_ok=True,
     )
 
-    with sync_playwright() as playwright:
-        browser = playwright.firefox.launch(
-            headless=headless,
-        )
+    ruta_salida.write_bytes(
+        respuesta.content
+    )
 
-        context = browser.new_context(
-            accept_downloads=True,
-            locale="es-PE",
-            extra_http_headers={
-                "Accept-Language": "es-PE,es;q=0.9",
-            },
-        )
+    print(f"Catálogo guardado en: {ruta_salida}")
 
-        page = context.new_page()
-
-        try:
-            page.goto(
-                URL,
-                wait_until="domcontentloaded",
-                timeout=60000,
-            )
-
-            cerrar_popups(page)
-
-            enlace_catalogo = obtener_enlace_catalogo(
-                page
-            )
-
-            with page.expect_download(
-                timeout=60000
-            ) as download_info:
-                enlace_catalogo.click()
-
-            download = download_info.value
-
-            download.save_as(
-                archivo_salida
-            )
-
-            return archivo_salida
-
-        finally:
-            browser.close()
+    return ruta_salida
