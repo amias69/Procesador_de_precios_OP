@@ -159,56 +159,6 @@ button:disabled {
   width: 100%;
 }
 
-.remember-switch {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 20px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.remember-switch input {
-  display: none;
-}
-
-.remember-switch__slider {
-  position: relative;
-  width: 46px;
-  height: 26px;
-  flex-shrink: 0;
-  border-radius: 999px;
-  background: var(--color-muted);
-  transition: background 180ms ease;
-}
-
-.remember-switch__slider::after {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--color-white);
-  transition: transform 180ms ease;
-}
-
-.remember-switch input:checked
-  + .remember-switch__slider {
-  background: var(--color-blue);
-}
-
-.remember-switch input:checked
-  + .remember-switch__slider::after {
-  transform: translateX(20px);
-}
-
-.remember-switch__text {
-  font-weight: 700;
-  color: var(--color-navy);
-}
-
 .step-label {
   color: var(--color-white);
   background: var(--color-blue);
@@ -535,4 +485,10 @@ button:disabled {
 
 .button--outline:hover {
   background: var(--color-soft);
+}
+
+.is-success-box {
+  color: #067647;
+  background: #ECFDF3;
+  border-color: rgba(6, 118, 71, 0.28);
 }

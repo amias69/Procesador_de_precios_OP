@@ -16,6 +16,7 @@ CATALOGO_LIMPIO_DIR = DATA_DIR / "catalogo_limpio"
 UPLOADS_DIR = DATA_DIR / "uploads"
 OUTPUTS_DIR = DATA_DIR / "outputs"
 REPORTS_DIR = DATA_DIR / "reports"
+SESSIONS_DIR = DATA_DIR / "sessions"
 CATALOGO_ORIGINAL_FILENAME = "catalogoproductos.xlsx"
 CATALOGO_LIMPIO_FILENAME = "catalogoproductos_limpio.xlsx"
 

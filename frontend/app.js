@@ -1,6 +1,6 @@
 const API_BASE_URL = "http://127.0.0.1:8000";
 
-
+const tituloPrincipal = document.getElementById("titulo-principal");
 const rucInput = document.getElementById("ruc");
 const codEstabInput = document.getElementById("cod-estab");
 const mesSelect = document.getElementById("mes");
@@ -8,10 +8,8 @@ const anioInput = document.getElementById("anio");
 const tipoProcesoSelect = document.getElementById("tipo-proceso");
 
 const filenamePreview = document.getElementById("filename-preview");
-
 const archivoExcelInput = document.getElementById("archivo-excel");
 const fileInfo = document.getElementById("file-info");
-
 const catalogoDetails = document.getElementById("catalogo-details");
 const catalogoOriginalDetail = document.getElementById("catalogo-original-detail");
 const catalogoLimpioDetail = document.getElementById("catalogo-limpio-detail");
@@ -19,68 +17,29 @@ const catalogoReadyDetail = document.getElementById("catalogo-ready-detail");
 const catalogoDetailMessage = document.getElementById("catalogo-detail-message");
 const catalogoDetailTitle =document.getElementById("catalogo-detail-title");
 const uploadBox = document.querySelector(".upload-box");
-
 const cargarCatalogoManualButton = document.getElementById("cargar-catalogo-manual");
 const catalogoManualInput = document.getElementById("catalogo-manual-input");
+const actualizarCatalogoButton = document.getElementById("actualizar-catalogo");
+const verCatalogoButton = document.getElementById("ver-catalogo");
 
-const recordarDatosInput = document.getElementById("recordar-datos");
+const procesarArchivoButton = document.getElementById("procesar-archivo");
+const descargarCsvButton = document.getElementById("descargar-csv");
+const descargarZipButton = document.getElementById("descargar-zip");
+const descargarValidosButton = document.getElementById("descargar-validos");
+const descargarDescartadosButton = document.getElementById("descargar-descartados");
+const descargarErroresButton = document.getElementById("descargar-errores");
 
-const actualizarCatalogoButton = document.getElementById(
-  "actualizar-catalogo"
-);
+const catalogoStatus = document.getElementById("catalogo-status");
+const catalogoStatusBox = catalogoStatus.closest(".status-box");
+const catalogoUltimaActualizacion =  document.getElementById("catalogo-ultima-actualizacion");
+const validosCount = document.getElementById("validos-count");
+const descartadosCount = document.getElementById("descartados-count");
+const erroresCount = document.getElementById("errores-count");
 
-const verCatalogoButton = document.getElementById(
-  "ver-catalogo"
-);
+const archivoFinalNombre = document.getElementById("archivo-final-nombre");
+const systemMessage = document.getElementById("system-message");
 
-const procesarArchivoButton = document.getElementById(
-  "procesar-archivo"
-);
-
-const descargarCsvButton = document.getElementById(
-  "descargar-csv"
-);
-
-const descargarZipButton = document.getElementById(
-  "descargar-zip"
-);
-
-const descargarValidosButton = document.getElementById(
-  "descargar-validos"
-);
-
-const descargarDescartadosButton = document.getElementById(
-  "descargar-descartados"
-);
-
-const descargarErroresButton = document.getElementById(
-  "descargar-errores"
-);
-
-const catalogoStatus = document.getElementById(
-  "catalogo-status"
-);
-
-const validosCount = document.getElementById(
-  "validos-count"
-);
-
-const descartadosCount = document.getElementById(
-  "descartados-count"
-);
-
-const erroresCount = document.getElementById(
-  "errores-count"
-);
-
-const archivoFinalNombre = document.getElementById(
-  "archivo-final-nombre"
-);
-
-const systemMessage = document.getElementById(
-  "system-message"
-);
-
+let easterEggDesbloqueado = false;
 
 let archivosGenerados = {
   csv: null,
@@ -181,10 +140,21 @@ function manejarCambioArchivo() {
   fileInfo.textContent =
     `Archivo seleccionado: ${archivo.name} ` +
     `(${tamanioKB} KB)`;
-
-  fileInfo.classList.remove(
-    "is-confirmed"
+  
+  fileInfo.classList.add(
+    "is-success-box"
   );
+
+  if (!archivo) {
+    fileInfo.textContent =
+      "Ningún archivo seleccionado.";
+
+    fileInfo.classList.remove(
+      "is-success-box"
+    );
+
+    return;
+  }
 
   void fileInfo.offsetWidth;
 
@@ -199,7 +169,34 @@ function manejarCambioArchivo() {
   }, 1200);
 }
 
+function mostrarFechaCatalogo(
+  fechaIso
+) {
+  if (!fechaIso) {
+    catalogoUltimaActualizacion.hidden =
+      true;
+
+    catalogoUltimaActualizacion.textContent =
+      "";
+
+    return;
+  }
+
+  const fecha = new Date(fechaIso);
+
+  catalogoUltimaActualizacion.textContent =
+    "Última actualización: " +
+    fecha.toLocaleString("es-PE");
+
+  catalogoUltimaActualizacion.hidden =
+    false;
+}
+
 async function cargarCatalogoManual() {
+  catalogoStatusBox?.classList.remove(
+    "is-success-box"
+  );
+
   const archivo =
     catalogoManualInput.files[0];
 
@@ -271,12 +268,22 @@ async function cargarCatalogoManual() {
 
     catalogoManualInput.value = "";
   }
+  catalogoStatus.textContent =
+    "Catálogo cargado correctamente";
+
+  catalogoStatusBox?.classList.add(
+    "is-success-box"
+  );
 }
 
 function mostrarMensaje(texto) {
   systemMessage.textContent = texto;
-}
 
+  systemMessage.classList.remove(
+    "is-error",
+    "is-success"
+  );
+}
 
 function mostrarMensajeError(texto) {
   systemMessage.textContent = texto;
@@ -406,6 +413,46 @@ function marcarErrorArchivo(
   }
 }
 
+function limpiarErrorCampo(
+  input,
+  errorId
+) {
+  input.classList.remove(
+    "is-invalid"
+  );
+
+  const errorElement =
+    document.getElementById(
+      errorId
+    );
+
+  if (errorElement) {
+    errorElement.textContent = "";
+  }
+}
+
+function actualizarMensajeTrasCorreccion() {
+  const quedanErrores =
+    document.querySelector(
+      ".is-invalid"
+    );
+
+  const habiaErrorGeneral =
+    systemMessage.classList.contains(
+      "is-error"
+    );
+
+  if (
+    habiaErrorGeneral &&
+    !quedanErrores
+  ) {
+    mostrarMensajeExito(
+      "Los datos fueron corregidos. " +
+      "Todo está listo para procesar."
+    );
+  }
+}
+
 function manejarArchivoSoltado(archivo) {
   if (!archivo) {
     return;
@@ -451,6 +498,8 @@ function manejarArchivoSoltado(archivo) {
   document.getElementById(
     "archivo-error"
   ).textContent = "";
+
+  actualizarMensajeTrasCorreccion();
 }
 
 function validarFormularioAntesDeProcesar() {
@@ -585,6 +634,14 @@ async function consultarEstadoCatalogo() {
 
       verCatalogoButton.disabled = false;
 
+      catalogoStatusBox?.classList.add(
+        "is-success-box"
+      );
+
+      mostrarFechaCatalogo(
+        data.ultima_actualizacion
+      );
+
     } else {
       catalogoDetailTitle.textContent =
         "Catálogo no disponible";
@@ -596,6 +653,12 @@ async function consultarEstadoCatalogo() {
       );
 
       verCatalogoButton.disabled = false;
+
+      catalogoStatusBox?.classList.remove(
+        "is-success-box"
+      );
+
+      catalogoUltimaActualizacion.hidden = true;
     }
 
   } catch (error) {
@@ -609,11 +672,21 @@ async function consultarEstadoCatalogo() {
       "Comprueba que el servidor esté funcionando e inténtalo nuevamente.";
 
     verCatalogoButton.disabled = false;
+
+    catalogoStatusBox?.classList.remove(
+      "is-success-box"
+    );
+
+    catalogoUltimaActualizacion.hidden = true;
   }
 }
 
 async function actualizarCatalogo() {
   catalogoDetails.hidden = true;
+
+  catalogoStatusBox?.classList.remove(
+  "is-success-box"
+  );
 
   actualizarCatalogoButton.disabled =
     true;
@@ -647,6 +720,10 @@ async function actualizarCatalogo() {
     catalogoStatus.textContent =
       "Catálogo actualizado correctamente";
 
+    catalogoStatusBox?.classList.add(
+      "is-success-box"
+    );
+
     verCatalogoButton.disabled =
       false;
 
@@ -666,57 +743,6 @@ async function actualizarCatalogo() {
 
     actualizarCatalogoButton.textContent =
       "Actualizar catálogo";
-  }
-}
-
-function guardarDatosEstablecimiento() {
-  if (!recordarDatosInput.checked) {
-    localStorage.removeItem(
-      "datosEstablecimiento"
-    );
-
-    return;
-  }
-
-  const datos = {
-    ruc: rucInput.value,
-    codEstab: codEstabInput.value,
-  };
-
-  localStorage.setItem(
-    "datosEstablecimiento",
-    JSON.stringify(datos)
-  );
-}
-
-
-function cargarDatosEstablecimiento() {
-  const datosGuardados =
-    localStorage.getItem(
-      "datosEstablecimiento"
-    );
-
-  if (!datosGuardados) {
-    return;
-  }
-
-  try {
-    const datos =
-      JSON.parse(datosGuardados);
-
-    rucInput.value =
-      datos.ruc || "";
-
-    codEstabInput.value =
-      datos.codEstab || "";
-
-    recordarDatosInput.checked =
-      true;
-
-  } catch {
-    localStorage.removeItem(
-      "datosEstablecimiento"
-    );
   }
 }
 
@@ -809,6 +835,7 @@ async function procesarArchivo() {
       {
         method: "POST",
         body: formData,
+        credentials: "include",
       }
     );
 
@@ -863,6 +890,8 @@ async function procesarArchivo() {
     archivoFinalNombre.textContent =
       data.archivo_final_zip;
 
+    easterEggDesbloqueado = true;
+
     mostrarMensajeExito(
       data.message
     );
@@ -913,6 +942,19 @@ function descargarReporte(
 
 
 function registrarEventos() {
+
+  tituloPrincipal.addEventListener(
+    "click",
+    () => {
+      if (!easterEggDesbloqueado) {
+        return;
+      }
+
+      window.location.href =
+        "/frontend/easter-egg.html";
+    }
+  );
+
   rucInput.addEventListener(
     "input",
     () => {
@@ -933,21 +975,6 @@ function registrarEventos() {
     }
   );
 
-  recordarDatosInput.addEventListener(
-    "change",
-    guardarDatosEstablecimiento
-  );
-
-  rucInput.addEventListener(
-    "change",
-    guardarDatosEstablecimiento
-  );
-
-  codEstabInput.addEventListener(
-    "change",
-    guardarDatosEstablecimiento
-  );
-
   codEstabInput.addEventListener(
     "input",
     () => {
@@ -956,15 +983,20 @@ function registrarEventos() {
         7
       );
 
-      codEstabInput.classList.remove(
-        "is-invalid"
-      );
+      const codEstab =
+        limpiarSoloNumeros(
+          codEstabInput.value
+        );
 
-      document.getElementById(
-        "cod-estab-error"
-      ).textContent = "";
+      if (codEstab.length === 7) {
+        limpiarErrorCampo(
+          codEstabInput,
+          "cod-estab-error"
+        );
+      }
 
       actualizarVistaPreviaNombre();
+      actualizarMensajeTrasCorreccion();
     }
   );
 
@@ -993,15 +1025,20 @@ function registrarEventos() {
         2
       );
 
-      anioInput.classList.remove(
-        "is-invalid"
-      );
+      const anio =
+        limpiarSoloNumeros(
+          anioInput.value
+        );
 
-      document.getElementById(
-        "anio-error"
-      ).textContent = "";
+      if (anio.length === 2) {
+        limpiarErrorCampo(
+          anioInput,
+          "anio-error"
+        );
+      }
 
       actualizarVistaPreviaNombre();
+      actualizarMensajeTrasCorreccion();
     }
   );
 
@@ -1015,18 +1052,17 @@ function registrarEventos() {
     () => {
       manejarCambioArchivo();
 
-      const uploadBox =
-        document.querySelector(
-          ".upload-box"
+      if (archivoExcelInput.files[0]) {
+        uploadBox.classList.remove(
+          "is-invalid"
         );
 
-      uploadBox.classList.remove(
-        "is-invalid"
-      );
+        document.getElementById(
+          "archivo-error"
+        ).textContent = "";
 
-      document.getElementById(
-        "archivo-error"
-      ).textContent = "";
+        actualizarMensajeTrasCorreccion();
+      }
     }
   );
 
@@ -1131,11 +1167,8 @@ function registrarEventos() {
   );
 }
 
-
 async function iniciarApp() {
   completarFechaActual();
-
-  cargarDatosEstablecimiento();
 
   actualizarVistaPreviaNombre();
 
@@ -1143,7 +1176,6 @@ async function iniciarApp() {
 
   await consultarEstadoCatalogo();
 }
-
 
 document.addEventListener(
   "DOMContentLoaded",

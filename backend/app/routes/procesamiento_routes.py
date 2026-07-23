@@ -1,7 +1,14 @@
 from pathlib import Path
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
-
+from fastapi import (
+    APIRouter,
+    File,
+    Form,
+    HTTPException,
+    Request,
+    Response,
+    UploadFile,
+)
 from backend.app import config
 from backend.app.services.csv_generator import generate_csv
 from backend.app.services.processor import process_price_file
@@ -13,11 +20,14 @@ from backend.app.utils.filenames import (
     build_report_filename,
     build_zip_filename,
 )
-from backend.app.utils.paths import get_output_path, get_report_path, get_upload_path
 from backend.app.validators.establecimiento_validator import (
     validate_establecimiento_data,
 )
 from backend.app.validators.excel_validator import validate_excel_extension
+from backend.app.services.session_manager import (
+    obtener_o_crear_session_id,
+    obtener_rutas_sesion,
+)
 
 
 router = APIRouter(prefix="/procesamiento", tags=["Procesamiento"])
@@ -34,6 +44,8 @@ def save_uploaded_file(upload_file: UploadFile, destination: Path) -> Path:
 
 @router.post("/procesar")
 async def procesar_archivo(
+    request: Request,
+    response: Response,
     archivo: UploadFile = File(...),
     ruc: str = Form(...),
     cod_estab: str = Form(...),
@@ -41,6 +53,19 @@ async def procesar_archivo(
     anio: str = Form(...),
     tipo_proceso: str = Form(...),
 ) -> dict:
+    session_id = obtener_o_crear_session_id(
+        request,
+        response,
+    )
+
+    session_paths = obtener_rutas_sesion(
+        session_id
+    )
+    print(
+        "SESION PROCESAMIENTO:",
+        session_id
+    )
+    
     errores_establecimiento = validate_establecimiento_data(
         ruc=ruc,
         cod_estab=cod_estab,
@@ -68,7 +93,7 @@ async def procesar_archivo(
             ],
         )
 
-    upload_path = get_upload_path(archivo.filename)
+    upload_path = (session_paths.uploads/archivo.filename)
     save_uploaded_file(archivo, upload_path)
 
     try:
@@ -123,8 +148,15 @@ async def procesar_archivo(
         tipo_proceso=tipo_proceso,
     )
 
-    csv_path = get_output_path(csv_filename)
-    zip_path = get_output_path(zip_filename)
+    csv_path = (
+        session_paths.outputs
+        / csv_filename
+    )
+
+    zip_path = (
+        session_paths.outputs
+        / zip_filename
+    )
 
     generate_csv(valid_records=validos, output_path=csv_path)
     generate_zip(csv_path=csv_path, zip_path=zip_path)
@@ -136,7 +168,10 @@ async def procesar_archivo(
             "VALIDOS",
             base_filename,
         )
-        validos_report_path = get_report_path(validos_report_name)
+        validos_report_path = (
+            session_paths.reports
+            / validos_report_name
+        )
 
         generate_report(
             records=validos,
@@ -150,9 +185,17 @@ async def procesar_archivo(
             "DESCARTADOS",
             base_filename,
         )
-        descartados_report_path = get_report_path(descartados_report_name)
-        descartados_report_path = get_report_path(
-            descartados_report_name.replace(".csv", ".ods")
+
+        descartados_report_name = (
+            descartados_report_name.replace(
+                ".csv",
+                ".ods",
+            )
+        )
+
+        descartados_report_path = (
+            session_paths.reports
+            / descartados_report_name
         )
 
         generate_report(
@@ -160,15 +203,20 @@ async def procesar_archivo(
             output_path=descartados_report_path,
             sheet_name="Descartados",
         )
-        reportes_generados["descartados"] = descartados_report_path.name
 
+        reportes_generados["descartados"] = (
+            descartados_report_path.name
+        )
     if errores_precio:
         errores_report_name = build_report_filename(
             "ERRORES_PRECIO",
             base_filename,
         )
-        errores_report_path = get_report_path(errores_report_name)
-
+        errores_report_path = (
+            session_paths.reports
+            / errores_report_name
+        )
+        
         generate_report(
             records=errores_precio,
             output_path=errores_report_path,

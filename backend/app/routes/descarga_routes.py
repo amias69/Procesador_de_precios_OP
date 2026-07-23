@@ -1,10 +1,17 @@
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Request,
+    Response,
+)
 from fastapi.responses import FileResponse
-
 from backend.app import config
-
+from backend.app.services.session_manager import (
+    obtener_o_crear_session_id,
+    obtener_rutas_sesion,
+)
 
 router = APIRouter(prefix="/descargas", tags=["Descargas"])
 
@@ -40,12 +47,28 @@ def get_safe_file_path(
 @router.get("/archivo/{filename}")
 def descargar_archivo_final(
     filename: str,
+    request: Request,
+    response: Response,
 ) -> FileResponse:
+    session_id = obtener_o_crear_session_id(
+        request,
+        response,
+    )
+
+    session_paths = obtener_rutas_sesion(
+        session_id
+    )
+
     file_path = get_safe_file_path(
-        config.OUTPUTS_DIR,
+        session_paths.outputs,
         filename,
     )
 
+    return FileResponse(
+        path=file_path,
+        filename=file_path.name,
+        media_type="application/octet-stream",
+    )
     return FileResponse(
         path=file_path,
         filename=file_path.name,
@@ -56,10 +79,27 @@ def descargar_archivo_final(
 @router.get("/reporte/{filename}")
 def descargar_reporte(
     filename: str,
+    request: Request,
+    response: Response,
 ) -> FileResponse:
+    session_id = obtener_o_crear_session_id(
+        request,
+        response,
+    )
+
+    session_paths = obtener_rutas_sesion(
+        session_id
+    )
+
     file_path = get_safe_file_path(
-        config.REPORTS_DIR,
+        session_paths.reports,
         filename,
+    )
+
+    return FileResponse(
+        path=file_path,
+        filename=file_path.name,
+        media_type="application/vnd.oasis.opendocument.spreadsheet",
     )
 
     return FileResponse(

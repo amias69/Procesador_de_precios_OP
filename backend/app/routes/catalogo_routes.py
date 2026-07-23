@@ -4,6 +4,7 @@ from backend.app import config
 from backend.app.services.catalogo_cleaner import limpiar_catalogo
 from backend.app.services.catalogo_downloader import descargar_catalogo
 from pathlib import Path
+from datetime import datetime
 
 router = APIRouter(
     prefix="/catalogo",
@@ -103,6 +104,14 @@ async def cargar_catalogo_manual(
                 f"cargado manualmente: {error}"
             ),
         ) from error
+        
+def obtener_ultima_actualizacion_catalogo():
+    if not config.CATALOGO_LIMPIO_PATH.exists():
+        return None
+
+    timestamp = config.CATALOGO_LIMPIO_PATH.stat().st_mtime
+
+    return datetime.fromtimestamp(timestamp).isoformat()
 
 @router.get("/estado")
 def obtener_estado_catalogo():
@@ -123,4 +132,5 @@ def obtener_estado_catalogo():
             "archivo": config.CATALOGO_LIMPIO_PATH.name,
         },
         "listo_para_procesar": limpio_existe,
+        "ultima_actualizacion": obtener_ultima_actualizacion_catalogo(),
     }

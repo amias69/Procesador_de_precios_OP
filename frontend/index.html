@@ -13,8 +13,9 @@
 
   <meta name="theme-color" content="#0B1D33" />
 
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="/frontend/styles.css">
+  <link rel="manifest" href="/frontend/manifest.json">
+
 </head>
 
 <body>
@@ -22,7 +23,9 @@
     <div class="hero__content">
       <p class="hero__eyebrow">Observatorio de Precios</p>
 
-      <h1>Generador de carga masiva</h1>
+      <h1 id="titulo-principal">
+        Generador de carga masiva
+      </h1>
 
       <p class="hero__description">
         Convierte tu lista de precios en un archivo CSV listo para cargar en la plataforma.
@@ -117,16 +120,6 @@
           </label>
         </form>
 
-        <label class="remember-switch">
-          <input type="checkbox" id="recordar-datos"/>
-
-          <span class="remember-switch__slider"></span>
-
-          <span class="remember-switch__text">
-            Recordar datos del establecimiento
-          </span>
-        </label>
-
         <div class="filename-preview">
           <span>Nombre final estimado</span>
           <strong id="filename-preview">
@@ -149,8 +142,17 @@
 
         <div class="status-box">
           <span class="status-box__label">Estado actual</span>
-          <strong id="catalogo-status">Catálogo pendiente de actualización</strong>
+          <strong id="catalogo-status">
+            Catálogo pendiente de actualización
+          </strong>
         </div>
+
+        <div class="catalogo-details" id="catalogo-details" hidden>
+          <strong id="catalogo-detail-title"></strong>
+          <p id="catalogo-detail-message"></p>
+          <p id="catalogo-ultima-actualizacion" hidden></p>
+        </div>
+
         <div class="catalogo-details" id="catalogo-details" hidden>
           <strong id="catalogo-detail-title"></strong>
           <p id="catalogo-detail-message"></p>
@@ -303,8 +305,8 @@
         </div>
       </div>
     </section>
-  </main>
+    </main>
 
-  <script src="app.js"></script>
+  <script src="/frontend/app.js"></script>
 </body>
 </html>
