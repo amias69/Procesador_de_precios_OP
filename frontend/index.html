@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Generador CSV - Observatorio de Precios</title>
+  <title>Generador CSV - Observatorio de Precios 🕏</title>
 
   <meta
     name="description"
@@ -12,6 +12,21 @@
   />
 
   <meta name="theme-color" content="#0B1D33" />
+  <link rel="icon"
+      type="image/svg+xml"
+      href="/frontend/assets/icons/favicon.svg">
+
+  <link rel="alternate icon"
+        href="/frontend/assets/icons/favicon.ico">
+
+  <link rel="icon"
+        type="image/png"
+        sizes="32x32"
+        href="/frontend/assets/icons/favicon-32x32.png">
+
+  <link rel="apple-touch-icon"
+        sizes="180x180"
+        href="/frontend/assets/icons/apple-touch-icon.png">
 
   <link rel="stylesheet" href="/frontend/styles.css">
   <link rel="manifest" href="/frontend/manifest.json">
@@ -190,9 +205,18 @@
 
         <div class="required-columns">
           <p>Columnas requeridas:</p>
-          <code>registro_sanitario</code>
-          <code>precio_empaque</code>
-          <code>precio_unidad</code>
+          <code data-tooltip="Número de registro sanitario del producto.">
+            registro_sanitario
+          </code>
+          <code data-tooltip="Precio de venta del empaque completo.">
+            precio_empaque
+          </code>
+          <code data-tooltip="Precio de venta por cada unidad del producto.">
+            precio_unidad
+          </code>
+          <code data-tooltip="Cantidad de unidades contenidas en un empaque.">
+            unidades_por_empaque
+          </code>
         </div>
 
         <label class="upload-box" for="archivo-excel">
@@ -221,7 +245,7 @@
           <span class="step-label">Paso 4</span>
           <h2>Procesamiento</h2>
           <p>
-            Cruza la lista de precios con el catálogo oficial y separa los registros válidos, descartados y con errores.
+            Cruza la lista de precios con el catálogo oficial y separa los registros válidos.
           </p>
         </div>
 
@@ -304,9 +328,13 @@
           </button>
         </div>
       </div>
-    </section>
+    <footer class="site-footer">
+      <span>© 2026 Amias Corp.</span>
+      <span class="site-footer__separator" aria-hidden="true">·</span>
+      <span>Licencia AGPLv3</span>
+    </footer>
+    </section> 
     </main>
-
-  <script src="/frontend/app.js"></script>
+  <script src="/frontend/app.js?v=4"></script>
 </body>
 </html>

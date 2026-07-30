@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "";
 
 const tituloPrincipal = document.getElementById("titulo-principal");
 const rucInput = document.getElementById("ruc");
@@ -1166,6 +1166,35 @@ function registrarEventos() {
     }
   );
 }
+
+document.addEventListener("click", (event) => {
+  const enlace = event.target.closest('a[href^="#"]');
+
+  if (!enlace) {
+    return;
+  }
+
+  const destinoId = enlace.getAttribute("href");
+
+  if (!destinoId || destinoId === "#") {
+    return;
+  }
+
+  const destino = document.querySelector(destinoId);
+
+  if (!destino) {
+    return;
+  }
+
+  event.preventDefault();
+
+  document.body.scrollTo({
+    top: destino.offsetTop,
+    behavior: "smooth",
+  });
+
+  history.replaceState(null, "", destinoId);
+});
 
 async function iniciarApp() {
   completarFechaActual();
