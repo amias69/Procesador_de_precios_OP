@@ -1188,13 +1188,88 @@ document.addEventListener("click", (event) => {
 
   event.preventDefault();
 
-  document.body.scrollTo({
-    top: destino.offsetTop,
+  destino.scrollIntoView({
     behavior: "smooth",
+    block: "start",
   });
 
   history.replaceState(null, "", destinoId);
 });
+
+// Navegación por secciones con la rueda del ratón.
+// Solo se activa en escritorio para no interferir con el gesto táctil móvil.
+const desktopMediaQuery = window.matchMedia("(min-width: 761px)");
+
+const secciones = [
+  document.querySelector(".hero"),
+  ...document.querySelectorAll(".screen-section"),
+].filter(Boolean);
+
+let desplazamientoEnCurso = false;
+
+function obtenerSeccionActual() {
+  const centroVentana = window.innerHeight / 2;
+
+  let indiceMasCercano = 0;
+  let distanciaMasCercana = Infinity;
+
+  secciones.forEach((seccion, indice) => {
+    const rect = seccion.getBoundingClientRect();
+    const centroSeccion = rect.top + rect.height / 2;
+    const distancia = Math.abs(centroSeccion - centroVentana);
+
+    if (distancia < distanciaMasCercana) {
+      distanciaMasCercana = distancia;
+      indiceMasCercano = indice;
+    }
+  });
+
+  return indiceMasCercano;
+}
+
+window.addEventListener(
+  "wheel",
+  (event) => {
+    if (!desktopMediaQuery.matches) {
+      return;
+    }
+
+    if (desplazamientoEnCurso) {
+      event.preventDefault();
+      return;
+    }
+
+    // Ignora movimientos mínimos de trackpad o rueda.
+    if (Math.abs(event.deltaY) < 10) {
+      return;
+    }
+
+    const indiceActual = obtenerSeccionActual();
+    const direccion = event.deltaY > 0 ? 1 : -1;
+
+    const indiceDestino = Math.min(
+      Math.max(indiceActual + direccion, 0),
+      secciones.length - 1
+    );
+
+    if (indiceDestino === indiceActual) {
+      return;
+    }
+
+    event.preventDefault();
+    desplazamientoEnCurso = true;
+
+    secciones[indiceDestino].scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+
+    window.setTimeout(() => {
+      desplazamientoEnCurso = false;
+    }, 750);
+  },
+  { passive: false }
+);
 
 async function iniciarApp() {
   completarFechaActual();
