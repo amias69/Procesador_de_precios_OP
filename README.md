@@ -103,7 +103,7 @@ Todo el proceso se realiza desde una única interfaz web, sin necesidad de insta
 
 ## Documentación para el usuario
 
-- 📘 Preparación del archivo Excel
+- 📘 [Preparación del archivo Excel](docs/usuario/preparacion_excel.md)
 
 ---
 
