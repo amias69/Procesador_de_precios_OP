@@ -14,7 +14,10 @@ def read_excel_file(path: Path) -> pd.DataFrame:
 
 def normalize_columns(dataframe: pd.DataFrame) -> pd.DataFrame:
     dataframe = dataframe.copy()
-    dataframe.columns = [str(column).strip() for column in dataframe.columns]
+    dataframe.columns = [
+        str(column).strip().lower()
+        for column in dataframe.columns
+    ]
     return dataframe
 
 

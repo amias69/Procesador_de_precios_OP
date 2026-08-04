@@ -82,7 +82,7 @@ def process_price_file(
     for _, row in farmacia_df.iterrows():
         registro = normalize_excel_text(row.get("registro_sanitario", ""))
         nombre_farmacia = normalize_excel_text(
-            row.get("Nombre", "")
+            row.get("nombre", "")
         )
         precio_empaque = row.get("precio_empaque")
         precio_unidad = row.get("precio_unidad")

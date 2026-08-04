@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -46,14 +45,6 @@ app = FastAPI(
 
 ensure_data_directories()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500",],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 app.include_router(procesamiento_router)
 app.include_router(descarga_router)
 app.include_router(catalogo_router)
@@ -67,9 +58,26 @@ app.mount(
     name="frontend",
 )
 
+app.mount(
+    "/manual",
+    StaticFiles(
+        directory="docs/usuario",
+        html=True,
+    ),
+    name="manual",
+)
+
 @app.get("/")
 def frontend():
     return FileResponse(
         config.FRONTEND_DIR / "index.html"
     )
+
+@app.get("/health", include_in_schema=False)
+def health():
+    return {
+        "status": "ok",
+        "app": config.APP_NAME,
+        "version": config.APP_VERSION,
+    }
 

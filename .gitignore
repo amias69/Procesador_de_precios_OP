@@ -24,9 +24,12 @@ backend/data/uploads/*
 backend/data/outputs/*
 backend/data/reports/*
 backend/data/sessions/*
+backend/data/catalogo_original/*
+backend/data/catalogo_limpio/*
 
-# Mantener estructura de carpetas
 !backend/data/uploads/.gitkeep
 !backend/data/outputs/.gitkeep
 !backend/data/reports/.gitkeep
 !backend/data/sessions/.gitkeep
+!backend/data/catalogo_original/.gitkeep
+!backend/data/catalogo_limpio/.gitkeep

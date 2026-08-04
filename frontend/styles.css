@@ -376,6 +376,23 @@ button:disabled {
   line-height: 1;
 }
 
+.help-link {
+  display: inline-flex;
+  align-items: center;
+
+  margin-top: 12px;
+
+  color: var(--color-primary);
+  font-weight: 600;
+
+  text-decoration: none;
+  transition: color .2s ease;
+}
+
+.help-link:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 760px) {
   html {
     height: 100%;
@@ -444,6 +461,30 @@ button:disabled {
   .next-link {
     margin-top: auto;
     padding-top: 28px;
+  }
+
+  #archivo-precios .help-link {
+    display: block;
+    width: fit-content;
+
+    margin-top: 12px;
+    margin-bottom: 18px;
+
+    color: var(--color-primary);
+    font-size: 0.92rem;
+    font-weight: 600;
+
+    text-decoration: none;
+  }
+
+  #archivo-precios .help-link:hover {
+    text-decoration: underline;
+  }
+
+  #archivo-precios .next-link {
+    display: inline-block;
+    margin-top: 0;
+    padding-top: 0;
   }
 
   #datos-establecimiento .section-card {
