@@ -21,7 +21,6 @@ backend/data/sessions/*
 backend/data/catalogo_original/*
 backend/data/catalogo_limpio/*
 
-docs/
 
 .DS_Store
 Thumbs.db
