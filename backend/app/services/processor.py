@@ -53,7 +53,7 @@ def build_catalog_lookup(
             row["nombre_producto"]
         )
 
-        unidades_por_empaque = row["Fracción"]
+        unidades_por_empaque = row["unidades_por_envase"]
 
         if not registro or not codigo_producto:
             continue
