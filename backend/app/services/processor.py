@@ -20,11 +20,12 @@ def load_catalog_dataframe(catalog_path: Path) -> pd.DataFrame:
 
 def build_catalog_lookup(
     catalog_df: pd.DataFrame,
-) -> dict[str, dict[str, str]]:
+) -> dict[str, dict]:
     required_columns = {
         "registro_sanitario",
         "codigo_producto",
         "nombre_producto",
+        "Fracción",
     }
 
     missing_columns = required_columns - set(catalog_df.columns)
@@ -37,7 +38,7 @@ def build_catalog_lookup(
             f"requeridas: {missing_text}."
         )
 
-    lookup: dict[str, dict[str, str]] = {}
+    lookup: dict[str, dict] = {}
 
     for _, row in catalog_df.iterrows():
         registro = normalize_excel_text(
@@ -52,12 +53,15 @@ def build_catalog_lookup(
             row["nombre_producto"]
         )
 
+        unidades_por_empaque = row["Fracción"]
+
         if not registro or not codigo_producto:
             continue
 
         lookup[registro] = {
             "codigo_producto": codigo_producto,
             "nombre_producto": nombre_producto,
+            "unidades_por_empaque": unidades_por_empaque,
         }
 
     return lookup
@@ -118,11 +122,14 @@ def process_price_file(
 
         cod_prod = producto_catalogo["codigo_producto"]
         nombre_producto = producto_catalogo["nombre_producto"]
+        unidades_por_empaque = producto_catalogo["unidades_por_empaque"]
 
         errores_empaque = validate_price(
             precio_empaque,
             "precio_empaque",
+            allow_zero=True,
         )
+
         errores_unidad = validate_price(
             precio_unidad,
             "precio_unidad",
@@ -144,15 +151,16 @@ def process_price_file(
             continue
 
         validos.append(
-            {
-                "registro_sanitario": registro,
-                "nombre_producto": nombre_producto,
-                "precio_empaque": precio_empaque,
-                "precio_unidad": precio_unidad,
-                "CodProd": cod_prod,
-                "CodEstab": cod_estab,
-            }
-        )
+        {
+            "registro_sanitario": registro,
+            "nombre_producto": nombre_producto,
+            "precio_empaque": precio_empaque,
+            "precio_unidad": precio_unidad,
+            "unidades_por_empaque": unidades_por_empaque,
+            "CodProd": cod_prod,
+            "CodEstab": cod_estab,
+        }
+    )
 
     return {
         "validos": validos,

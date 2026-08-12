@@ -16,7 +16,11 @@ def parse_price(value) -> Decimal | None:
         return None
 
 
-def validate_price(value, field_name: str) -> list[str]:
+def validate_price(
+    value,
+    field_name: str,
+    allow_zero: bool = False,
+) -> list[str]:
     errors = []
     price = parse_price(value)
 
@@ -24,11 +28,18 @@ def validate_price(value, field_name: str) -> list[str]:
         errors.append(f"{field_name} debe ser un valor numérico.")
         return errors
 
-    if price <= 0:
-        errors.append(f"{field_name} debe ser mayor que 0.")
+    if allow_zero:
+        if price < 0:
+            errors.append(
+                f"{field_name} debe ser mayor o igual que 0."
+            )
+    else:
+        if price <= 0:
+            errors.append(
+                f"{field_name} debe ser mayor que 0."
+            )
 
     return errors
-
 
 def format_price(value) -> str:
     price = parse_price(value)
