@@ -25,7 +25,7 @@ def build_catalog_lookup(
         "registro_sanitario",
         "codigo_producto",
         "nombre_producto",
-        "Fracción",
+        "unidades_por_envase",
     }
 
     missing_columns = required_columns - set(catalog_df.columns)
