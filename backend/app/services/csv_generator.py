@@ -3,30 +3,25 @@ from pathlib import Path
 import pandas as pd
 
 from backend.app import config
-from backend.app.validators.precio_validator import format_price
+ffrom backend.app.validators.precio_validator import (format_price, parse_price,)
 
 
 def build_output_dataframe(valid_records: list[dict]) -> pd.DataFrame:
     output_rows: list[dict[str, str]] = []
 
     for record in valid_records:
-        precio_empaque = record["precio_empaque"]
-        precio_unidad = record["precio_unidad"]
-        unidades_por_empaque = record["unidades_por_empaque"]
+        precio_unidad = parse_price(
+            record["precio_unidad"]
+        )
+        unidades_por_empaque = parse_price(
+            record["unidades_por_empaque"]
+        )
 
-        # Si el precio de empaque original es 0,
-        # significa que el producto se maneja como una sola unidad.
-        if float(precio_empaque) == 0:
-            precio_empaque_final = precio_unidad
-
-        # Si existe precio de empaque, calculamos el precio
-        # que se enviará al Observatorio usando el precio unitario
-        # y la cantidad oficial de unidades del catálogo.
-        else:
-            precio_empaque_final = (
-                float(precio_unidad)
-                * float(unidades_por_empaque)
-            )
+        # El precio por empaque se calcula siempre usando
+        # el precio unitario y las unidades oficiales del catálogo.
+        precio_empaque_final = (
+            precio_unidad * unidades_por_empaque
+        )
 
         output_rows.append(
             {
