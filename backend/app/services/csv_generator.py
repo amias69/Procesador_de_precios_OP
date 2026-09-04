@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 
 from backend.app import config
-ffrom backend.app.validators.precio_validator import (format_price, parse_price,)
+from backend.app.validators.precio_validator import (format_price, parse_price,)
 
 
 def build_output_dataframe(valid_records: list[dict]) -> pd.DataFrame:
