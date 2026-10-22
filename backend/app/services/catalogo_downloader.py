@@ -1,5 +1,6 @@
 from pathlib import Path
-
+import os
+import zipfile
 import requests
 
 URL_CATALOGO = (
@@ -24,49 +25,91 @@ PAYLOAD = {
     }
 }
 
-def descargar_catalogo(
-    archivo_salida: str | Path,
-) -> Path:
+TIMEOUT = (10, 50)
+
+def cargar_proxies():
+    archivo = Path(
+        os.getenv("CATALOGO_PROXIES_FILE", "/app/config/proxies.txt")
+    )
+
+    if not archivo.is_file():
+        print(f"No se encontró el archivo de proxies: {archivo}")
+        return []
+
+    return [
+        linea.strip()
+        for linea in archivo.read_text(encoding="utf-8").splitlines()
+        if linea.strip() and not linea.lstrip().startswith("#")
+    ]
+
+
+def descargar_catalogo(archivo_salida: str | Path) -> Path:
+    ruta_salida = Path(archivo_salida)
     """
     Descarga el catálogo oficial de productos farmacéuticos de DIGEMID.
     """
+    print("Intentando descargar catálogo directamente...")
 
-    ruta_salida = Path(archivo_salida)
+    proxies = [None] + cargar_proxies()
+    errores = []
 
-    print("Descargando catálogo de productos farmacéuticos...")
+    for proxy in proxies:
+        origen = proxy or "conexión directa"
+        print(f"Probando: {origen}")
 
-    try:
-        respuesta = requests.post(
-            URL_CATALOGO,
-            headers=HEADERS,
-            json=PAYLOAD,
-            timeout=120,
-        )
+        try:
+            with requests.Session() as sesion:
+                sesion.trust_env = False
 
-        respuesta.raise_for_status()
+                if proxy:
+                    sesion.proxies = {
+                        "http": proxy,
+                        "https": proxy,
+                    }
 
-    except requests.RequestException as error:
-        raise RuntimeError(
-            f"No se pudo descargar el catálogo de DIGEMID: {error}"
-        ) from error
+                respuesta = sesion.post(
+                    URL_CATALOGO,
+                    headers=HEADERS,
+                    json=PAYLOAD,
+                    timeout=TIMEOUT,
+                )
+                respuesta.raise_for_status()
 
-    # Los archivos XLSX son contenedores ZIP y comienzan con la firma "PK".
-    # Esto evita guardar como Excel una página HTML de bloqueo de Cloudflare.
-    if not respuesta.content.startswith(b"PK"):
-        raise RuntimeError(
-            "DIGEMID respondió correctamente a la petición, "
-            "pero la respuesta recibida no parece ser un archivo Excel válido."
-        )
+            # Los archivos XLSX son contenedores ZIP y comienzan con la firma "PK".
+            # Esto evita guardar como Excel una página HTML de bloqueo de Cloudflare.
+            if not respuesta.content.startswith(b"PK"):
+                raise ValueError("La respuesta no parece ser un XLSX")
 
-    ruta_salida.parent.mkdir(
-        parents=True,
-        exist_ok=True,
+            with zipfile.ZipFile(
+                __import__("io").BytesIO(respuesta.content)
+            ) as excel:
+                if excel.testzip() is not None:
+                    raise ValueError("El archivo XLSX está dañado")
+
+                if "xl/workbook.xml" not in excel.namelist():
+                    raise ValueError("El archivo no contiene un libro Excel")
+
+            ruta_salida.parent.mkdir(parents=True, exist_ok=True)
+
+            temporal = ruta_salida.with_suffix(".tmp")
+            temporal.write_bytes(respuesta.content)
+            temporal.replace(ruta_salida)
+
+            print(f"Catálogo descargado correctamente mediante: {origen}")
+            print(f"Guardado en: {ruta_salida}")
+            return ruta_salida
+
+        except (
+            requests.RequestException,
+            ValueError,
+            zipfile.BadZipFile,
+            OSError,
+        ) as error:
+            print(f"Falló {origen}: {error}")
+            errores.append(f"{origen}: {error}")
+
+    raise RuntimeError(
+        "No se pudo descargar el catálogo mediante ninguna conexión. "
+        + " | ".join(errores)
     )
 
-    ruta_salida.write_bytes(
-        respuesta.content
-    )
-
-    print(f"Catálogo guardado en: {ruta_salida}")
-
-    return ruta_salida

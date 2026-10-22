@@ -8,6 +8,12 @@ services:
     ports:
       - "8000:8000"
 
+    environment:
+      CATALOGO_PROXIES_FILE: /app/config/proxies.txt
+
+    volumes:
+      - ./config/proxies.txt:/app/config/proxies.txt:ro
+
     healthcheck:
       test:
         [
