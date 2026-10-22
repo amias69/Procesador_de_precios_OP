@@ -111,7 +111,7 @@ def obtener_ultima_actualizacion_catalogo():
 
     timestamp = config.CATALOGO_LIMPIO_PATH.stat().st_mtime
 
-    return datetime.fromtimestamp(timestamp).isoformat()
+    return datetime.fromtimestamp(timestamp, tz=timezone.utc).isoformat()
 
 @router.get("/estado")
 def obtener_estado_catalogo():
