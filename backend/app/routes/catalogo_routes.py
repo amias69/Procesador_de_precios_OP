@@ -4,7 +4,7 @@ from backend.app import config
 from backend.app.services.catalogo_cleaner import limpiar_catalogo
 from backend.app.services.catalogo_downloader import descargar_catalogo
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 router = APIRouter(
     prefix="/catalogo",
