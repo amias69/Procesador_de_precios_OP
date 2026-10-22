@@ -1,0 +1,11 @@
+services:
+  observatorio-precios:
+    expose:
+      - "8000"
+
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
