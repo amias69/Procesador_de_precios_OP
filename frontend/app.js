@@ -453,6 +453,7 @@ function actualizarMensajeTrasCorreccion() {
   }
 }
 
+//aquí se valida el archivo soltado dentro del cuadro drag and drop y se maneja su carga si es válido
 function manejarArchivoSoltado(archivo) {
   if (!archivo) {
     return;
@@ -462,6 +463,7 @@ function manejarArchivoSoltado(archivo) {
     ".xlsx",
     ".xls",
     ".ods",
+    ".csv",
   ];
 
   const nombreArchivo =
@@ -475,7 +477,7 @@ function manejarArchivoSoltado(archivo) {
 
   if (!extensionValida) {
     marcarErrorArchivo(
-      "El archivo debe ser .xlsx, .xls u .ods."
+      "El archivo debe ser .xlsx, .xls, .ods o .csv."
     );
 
     return;
@@ -1271,6 +1273,7 @@ window.addEventListener(
   { passive: false }
 );
 
+//esta función se ejecuta al cargar la página y realiza las acciones iniciales necesarias
 async function iniciarApp() {
   completarFechaActual();
 
@@ -1285,3 +1288,22 @@ document.addEventListener(
   "DOMContentLoaded",
   iniciarApp
 );
+
+//esta función asegura que si el usuario recarga la página, se le redirige al inicio 
+//y se evita que el scroll quede en una posición intermedia.
+function volverAlInicioTrasRecarga() {
+  const navegacion = performance.getEntriesByType("navigation")[0];
+
+  if (navegacion?.type !== "reload") return;
+
+  // Evitar que el navegador restaure la posición anterior.
+  history.scrollRestoration = "manual";
+
+  // Eliminar parámetros y fragmentos, conservando la ruta actual.
+  history.replaceState(history.state, "", window.location.pathname);
+
+  // Regresar al principio del documento.
+  window.scrollTo(0, 0);
+}
+
+volverAlInicioTrasRecarga();
