@@ -73,8 +73,8 @@ La aplicación fue desarrollada utilizando tecnologías modernas, ligeras y ampl
 Clonar el repositorio:
 
 ```bash
-git clone https://github.com/USUARIO/observatorio-precios.git
-cd observatorio-precios
+git clone https://github.com/amias69/Procesador_de_precios_OP.git
+cd Procesador_de_precios_OP
 ```
 
 Construir e iniciar la aplicación:
